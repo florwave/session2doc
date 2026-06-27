@@ -9,7 +9,10 @@ When learning a topic through AI conversations, useful information is scattered 
 ## Installation
 
 ```bash
-# Add as a local plugin in your project
+# Install from GitHub
+claude plugins add https://github.com/florwave/session2doc
+
+# Or install from a local path
 claude plugins add /path/to/session2doc
 ```
 
