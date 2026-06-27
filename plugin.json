@@ -1,0 +1,10 @@
+{
+  "name": "session2doc",
+  "description": "标记对话历史并整理为文档",
+  "commands": [
+    "commands/mark.md",
+    "commands/doc.md",
+    "commands/begin.md",
+    "commands/end.md"
+  ]
+}
