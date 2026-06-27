@@ -63,4 +63,4 @@ claude plugins add /path/to/session2doc
 
 ## License
 
-MIT
+Apache-2.0
