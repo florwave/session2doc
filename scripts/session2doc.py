@@ -36,6 +36,44 @@ def locate_last(session_file):
     }))
 
 
+def add_mark(state_file, desc, user_uuid, assistant_uuid):
+    """将一轮对话的 uuid 添加到指定 desc 分组。"""
+    state = {"marks": {}, "recording": {"active": False, "start_uuid": None, "start_timestamp": None}}
+    if os.path.exists(state_file):
+        with open(state_file) as f:
+            state = json.load(f)
+
+    if desc not in state["marks"]:
+        state["marks"][desc] = []
+
+    state["marks"][desc].append({
+        "user_uuid": user_uuid,
+        "assistant_uuid": assistant_uuid
+    })
+
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    with open(state_file, "w") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
+
+    print(json.dumps({"status": "ok", "desc": desc, "count": len(state["marks"][desc])}))
+
+
+def begin_recording(state_file, last_uuid):
+    """开始录制模式，记录起始 uuid。"""
+    state = {"marks": {}, "recording": {"active": False, "start_uuid": None, "start_timestamp": None}}
+    if os.path.exists(state_file):
+        with open(state_file) as f:
+            state = json.load(f)
+
+    state["recording"] = {"active": True, "start_uuid": last_uuid}
+
+    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    with open(state_file, "w") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
+
+    print(json.dumps({"status": "ok", "start_uuid": last_uuid}))
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: session2doc.py <command> [args...]", file=sys.stderr)
@@ -47,6 +85,16 @@ def main():
             print("Usage: session2doc.py locate-last <session_file>", file=sys.stderr)
             sys.exit(1)
         locate_last(sys.argv[2])
+    elif cmd == "add-mark":
+        if len(sys.argv) < 6:
+            print("Usage: session2doc.py add-mark <state_file> <desc> <user_uuid> <assistant_uuid>", file=sys.stderr)
+            sys.exit(1)
+        add_mark(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    elif cmd == "begin":
+        if len(sys.argv) < 4:
+            print("Usage: session2doc.py begin <state_file> <last_uuid>", file=sys.stderr)
+            sys.exit(1)
+        begin_recording(sys.argv[2], sys.argv[3])
     else:
         print(f"Unknown command: {cmd}", file=sys.stderr)
         sys.exit(1)
