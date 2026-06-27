@@ -12,16 +12,19 @@ function extractText(message) {
 }
 
 function readJsonl(file) {
-  return readFileSync(file, 'utf8').split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+  return readFileSync(file, 'utf8').split('\n').filter(l => l.trim()).flatMap(l => {
+    try { return [JSON.parse(l)]; } catch { return []; }
+  });
 }
 
 function loadState(file) {
   if (existsSync(file)) return JSON.parse(readFileSync(file, 'utf8'));
-  return { marks: {}, recording: { active: false, start_uuid: null, start_timestamp: null } };
+  return { marks: {}, recording: { active: false, start_uuid: null } };
 }
 
 function saveState(file, state) {
-  mkdirSync(dirname(file), { recursive: true });
+  const dir = dirname(file);
+  if (dir) mkdirSync(dir, { recursive: true });
   writeFileSync(file, JSON.stringify(state, null, 2));
 }
 
@@ -42,7 +45,9 @@ function locateLast(sessionFile) {
 function addMark(stateFile, desc, userUuid, assistantUuid) {
   const state = loadState(stateFile);
   if (!state.marks[desc]) state.marks[desc] = [];
-  state.marks[desc].push({ user_uuid: userUuid, assistant_uuid: assistantUuid });
+  const entry = { user_uuid: userUuid, assistant_uuid: assistantUuid };
+  const exists = state.marks[desc].some(m => m.user_uuid === userUuid && m.assistant_uuid === assistantUuid);
+  if (!exists) state.marks[desc].push(entry);
   saveState(stateFile, state);
   console.log(JSON.stringify({ status: 'ok', desc, count: state.marks[desc].length }));
 }
@@ -67,6 +72,9 @@ function extractMarks(stateFile, sessionFile, desc) {
     const u = msgByUuid[mark.user_uuid], a = msgByUuid[mark.assistant_uuid];
     if (u && a) results.push({ user: extractText(u), assistant: extractText(a), timestamp: u.timestamp ?? '' });
   }
+  // Clear marks after successful extraction
+  delete state.marks[desc];
+  saveState(stateFile, state);
   console.log(JSON.stringify(results));
 }
 
@@ -92,6 +100,9 @@ function extractRange(stateFile, sessionFile) {
       results.push({ user: extractText(userMsg), assistant: extractText(assistantMsg), timestamp: userMsg.timestamp ?? '' });
     } else { i++; }
   }
+  // Clear recording state after successful extraction
+  state.recording = { active: false, start_uuid: null };
+  saveState(stateFile, state);
   console.log(JSON.stringify(results));
 }
 

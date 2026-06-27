@@ -11,7 +11,10 @@ def locate_last(session_file):
     messages = []
     with open(session_file) as f:
         for line in f:
-            obj = json.loads(line.strip())
+            try:
+                obj = json.loads(line.strip())
+            except json.JSONDecodeError:
+                continue
             if obj.get("type") in ("user", "assistant"):
                 messages.append(obj)
 
@@ -46,12 +49,13 @@ def add_mark(state_file, desc, user_uuid, assistant_uuid):
     if desc not in state["marks"]:
         state["marks"][desc] = []
 
-    state["marks"][desc].append({
-        "user_uuid": user_uuid,
-        "assistant_uuid": assistant_uuid
-    })
+    entry = {"user_uuid": user_uuid, "assistant_uuid": assistant_uuid}
+    if entry not in state["marks"][desc]:
+        state["marks"][desc].append(entry)
 
-    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    dirname = os.path.dirname(state_file)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
     with open(state_file, "w") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
@@ -67,7 +71,9 @@ def begin_recording(state_file, last_uuid):
 
     state["recording"] = {"active": True, "start_uuid": last_uuid}
 
-    os.makedirs(os.path.dirname(state_file), exist_ok=True)
+    dirname = os.path.dirname(state_file)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
     with open(state_file, "w") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
@@ -102,7 +108,10 @@ def extract_marks(state_file, session_file, desc):
     msg_by_uuid = {}
     with open(session_file) as f:
         for line in f:
-            obj = json.loads(line.strip())
+            try:
+                obj = json.loads(line.strip())
+            except json.JSONDecodeError:
+                continue
             if obj.get("type") in ("user", "assistant") and "uuid" in obj:
                 msg_by_uuid[obj["uuid"]] = obj
 
@@ -116,6 +125,11 @@ def extract_marks(state_file, session_file, desc):
                 "assistant": extract_text(assistant_msg),
                 "timestamp": user_msg.get("timestamp", "")
             })
+
+    # Clear marks after successful extraction
+    state["marks"].pop(desc, None)
+    with open(state_file, "w") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
 
     print(json.dumps(results, ensure_ascii=False))
 
@@ -135,7 +149,10 @@ def extract_range(state_file, session_file):
     messages = []
     with open(session_file) as f:
         for line in f:
-            obj = json.loads(line.strip())
+            try:
+                obj = json.loads(line.strip())
+            except json.JSONDecodeError:
+                continue
             if obj.get("type") in ("user", "assistant"):
                 messages.append(obj)
 
@@ -172,6 +189,11 @@ def extract_range(state_file, session_file):
                 })
         else:
             i += 1
+
+    # Clear recording state after successful extraction
+    state["recording"] = {"active": False, "start_uuid": None}
+    with open(state_file, "w") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
 
     print(json.dumps(results, ensure_ascii=False))
 
