@@ -74,6 +74,108 @@ def begin_recording(state_file, last_uuid):
     print(json.dumps({"status": "ok", "start_uuid": last_uuid}))
 
 
+def extract_text(message):
+    """从 message.content 中提取纯文本。"""
+    content = message.get("message", {}).get("content", "")
+    if isinstance(content, str):
+        return content
+    elif isinstance(content, list):
+        texts = []
+        for block in content:
+            if isinstance(block, dict):
+                if block.get("type") == "text":
+                    texts.append(block["text"])
+        return "\n".join(texts)
+    return ""
+
+
+def extract_marks(state_file, session_file, desc):
+    """提取指定 desc 分组下所有标记的对话内容。"""
+    with open(state_file) as f:
+        state = json.load(f)
+
+    marks = state.get("marks", {}).get(desc, [])
+    if not marks:
+        print(json.dumps({"error": f"no marks found for '{desc}'"}))
+        sys.exit(1)
+
+    msg_by_uuid = {}
+    with open(session_file) as f:
+        for line in f:
+            obj = json.loads(line.strip())
+            if obj.get("type") in ("user", "assistant") and "uuid" in obj:
+                msg_by_uuid[obj["uuid"]] = obj
+
+    results = []
+    for mark in marks:
+        user_msg = msg_by_uuid.get(mark["user_uuid"])
+        assistant_msg = msg_by_uuid.get(mark["assistant_uuid"])
+        if user_msg and assistant_msg:
+            results.append({
+                "user": extract_text(user_msg),
+                "assistant": extract_text(assistant_msg),
+                "timestamp": user_msg.get("timestamp", "")
+            })
+
+    print(json.dumps(results, ensure_ascii=False))
+
+
+def extract_range(state_file, session_file):
+    """提取 begin 之后到 session 末尾的所有对话。"""
+    with open(state_file) as f:
+        state = json.load(f)
+
+    recording = state.get("recording", {})
+    if not recording.get("active"):
+        print(json.dumps({"error": "no active recording"}))
+        sys.exit(1)
+
+    start_uuid = recording["start_uuid"]
+
+    messages = []
+    with open(session_file) as f:
+        for line in f:
+            obj = json.loads(line.strip())
+            if obj.get("type") in ("user", "assistant"):
+                messages.append(obj)
+
+    start_idx = None
+    for i, msg in enumerate(messages):
+        if msg.get("uuid") == start_uuid:
+            start_idx = i
+            break
+
+    if start_idx is None:
+        print(json.dumps({"error": f"start_uuid {start_uuid} not found"}))
+        sys.exit(1)
+
+    after = messages[start_idx + 1:]
+    results = []
+    i = 0
+    while i < len(after):
+        if after[i]["type"] == "user":
+            user_msg = after[i]
+            assistant_msg = None
+            for j in range(i + 1, len(after)):
+                if after[j]["type"] == "assistant":
+                    assistant_msg = after[j]
+                    i = j + 1
+                    break
+            else:
+                i += 1
+                continue
+            if assistant_msg:
+                results.append({
+                    "user": extract_text(user_msg),
+                    "assistant": extract_text(assistant_msg),
+                    "timestamp": user_msg.get("timestamp", "")
+                })
+        else:
+            i += 1
+
+    print(json.dumps(results, ensure_ascii=False))
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: session2doc.py <command> [args...]", file=sys.stderr)
@@ -95,6 +197,16 @@ def main():
             print("Usage: session2doc.py begin <state_file> <last_uuid>", file=sys.stderr)
             sys.exit(1)
         begin_recording(sys.argv[2], sys.argv[3])
+    elif cmd == "extract":
+        if len(sys.argv) < 5:
+            print("Usage: session2doc.py extract <state_file> <session_file> <desc>", file=sys.stderr)
+            sys.exit(1)
+        extract_marks(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif cmd == "extract-range":
+        if len(sys.argv) < 4:
+            print("Usage: session2doc.py extract-range <state_file> <session_file>", file=sys.stderr)
+            sys.exit(1)
+        extract_range(sys.argv[2], sys.argv[3])
     else:
         print(f"Unknown command: {cmd}", file=sys.stderr)
         sys.exit(1)
