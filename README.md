@@ -1,65 +1,65 @@
 # session2doc
 
-一个 Claude Code plugin，用于在对话过程中标记需要整理的对话历史，最终将标记的内容整理为格式化文档。
+A Claude Code plugin for marking conversation history during sessions and compiling them into formatted documents.
 
-## 使用场景
+## Use Case
 
-在与 AI 对话学习某个知识点时，有用的信息散落在 session 的多轮对话中。手动整理费时费力，session2doc 让你在对话过程中随手标记，最后一键生成整理好的文档。
+When learning a topic through AI conversations, useful information is scattered across multiple turns in a session. Manual organization is tedious — session2doc lets you mark conversations on the fly and generate a well-organized document with a single command.
 
-## 安装
+## Installation
 
 ```bash
-# 在你的项目中添加为本地 plugin
+# Add as a local plugin in your project
 claude plugins add /path/to/session2doc
 ```
 
-## 命令
+## Commands
 
-### mark 模式（适合分散的对话）
+### Mark Mode (for scattered conversations)
 
-标记散落在不同位置的对话轮次，按主题分组，最后统一生成文档。
+Mark conversation turns at different positions, group by topic, and compile into documents.
 
 ```bash
-# 标记上一轮对话到指定主题
-/session2doc:mark websocket原理
+# Mark the last conversation turn to a topic
+/session2doc:mark websocket-internals
 
-# 继续对话...再次标记
-/session2doc:mark websocket原理
+# Continue chatting... mark again
+/session2doc:mark websocket-internals
 
-# 可以同时标记多个主题
-/session2doc:mark rust生命周期
+# Mark multiple topics simultaneously
+/session2doc:mark rust-lifetimes
 
-# 生成文档
-/session2doc:doc websocket原理 docs/websocket.md
-/session2doc:doc rust生命周期 docs/rust-lifetime.md
+# Generate documents
+/session2doc:doc websocket-internals docs/websocket.md
+/session2doc:doc rust-lifetimes docs/rust-lifetime.md
 ```
 
-### begin/end 模式（适合连续的对话）
+### Begin/End Mode (for continuous conversations)
 
-标记一段连续的对话范围，结束时直接生成文档。
+Mark a continuous range of conversations and generate a document when done.
 
 ```bash
-# 开始录制
+# Start recording
 /session2doc:begin
 
-# 正常对话...所有后续对话都会被记录
+# Chat normally... all subsequent conversations are recorded
 
-# 结束录制并生成文档
-/session2doc:end goroutine调度 docs/goroutine.md
+# Stop recording and generate document
+/session2doc:end goroutine-scheduling docs/goroutine.md
 ```
 
-## 文档整理原则
+## Formatting Principles
 
-生成的文档遵循以下原则：
-- 保留对话中的原始描述、代码、示例
-- 只做格式化整理（标题、代码块、列表）
-- 去除工具调用、系统消息等噪声
-- 按对话时间顺序组织
-- 不添加对话中不存在的额外内容
+Generated documents follow these principles:
+- Preserve original descriptions, code, and examples from conversations
+- Format only (headings, code blocks, lists)
+- Remove tool calls, system messages, and other noise
+- Organize in chronological order
+- Never add content that doesn't exist in the original conversation
 
-## 环境要求
+## Requirements
 
-脚本优先使用 Python 3，如不可用则 fallback 到 Node.js，无需安装额外依赖。
+Scripts prefer Python 3, falling back to Node.js if unavailable. No external dependencies required.
 
 ## License
 

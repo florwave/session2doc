@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""session2doc: 解析 Claude Code session 历史并管理标记状态。"""
+"""session2doc: Parse Claude Code session history and manage mark state."""
 
 import json
 import sys
@@ -7,7 +7,7 @@ import os
 
 
 def locate_last(session_file):
-    """找到 session 文件中最后一轮 user+assistant 对话的 uuid。"""
+    """Find the last user+assistant conversation pair's uuids in the session file."""
     messages = []
     with open(session_file) as f:
         for line in f:
@@ -15,7 +15,7 @@ def locate_last(session_file):
             if obj.get("type") in ("user", "assistant"):
                 messages.append(obj)
 
-    # 从后往前找最后一个 assistant，再找它前面最近的 user
+    # Find the last assistant, then the nearest user before it
     last_assistant = None
     last_user = None
     for i in range(len(messages) - 1, -1, -1):
@@ -37,7 +37,7 @@ def locate_last(session_file):
 
 
 def add_mark(state_file, desc, user_uuid, assistant_uuid):
-    """将一轮对话的 uuid 添加到指定 desc 分组。"""
+    """Add a conversation pair's uuids to the specified desc group."""
     state = {"marks": {}, "recording": {"active": False, "start_uuid": None, "start_timestamp": None}}
     if os.path.exists(state_file):
         with open(state_file) as f:
@@ -59,7 +59,7 @@ def add_mark(state_file, desc, user_uuid, assistant_uuid):
 
 
 def begin_recording(state_file, last_uuid):
-    """开始录制模式，记录起始 uuid。"""
+    """Start recording mode, save the starting uuid."""
     state = {"marks": {}, "recording": {"active": False, "start_uuid": None, "start_timestamp": None}}
     if os.path.exists(state_file):
         with open(state_file) as f:
@@ -75,7 +75,7 @@ def begin_recording(state_file, last_uuid):
 
 
 def extract_text(message):
-    """从 message.content 中提取纯文本。"""
+    """Extract plain text from message.content."""
     content = message.get("message", {}).get("content", "")
     if isinstance(content, str):
         return content
@@ -90,7 +90,7 @@ def extract_text(message):
 
 
 def extract_marks(state_file, session_file, desc):
-    """提取指定 desc 分组下所有标记的对话内容。"""
+    """Extract all marked conversation content for the specified desc group."""
     with open(state_file) as f:
         state = json.load(f)
 
@@ -121,7 +121,7 @@ def extract_marks(state_file, session_file, desc):
 
 
 def extract_range(state_file, session_file):
-    """提取 begin 之后到 session 末尾的所有对话。"""
+    """Extract all conversations after the begin marker to end of session."""
     with open(state_file) as f:
         state = json.load(f)
 

@@ -1,25 +1,25 @@
 ---
-description: 标记上一轮对话到指定主题分组
+description: Mark the last conversation turn to a topic group
 argument-hint: "<desc>"
 ---
 
-将当前 session 最近一轮对话标记到指定主题分组。
+Mark the most recent conversation turn (user + assistant) in the current session to the specified topic group.
 
-参数：
-- `desc`（必填）：主题描述，用于分组标识。可同时维护多个主题，通过 `/session2doc:doc` 分别生成文档。
+Parameters:
+- `desc` (required): Topic description used as group identifier. Multiple topics can be maintained simultaneously and compiled into separate documents via `/session2doc:doc`.
 
-步骤：
-1. 确定当前 session 文件路径：从 `~/.claude/projects/` 下找到与当前项目对应的目录，取最近修改的 `.jsonl` 文件。项目路径编码规则：将工作目录的 `/` 替换为 `-`。
-2. 运行脚本定位最后一轮对话（优先 python3，fallback 到 node）：
+Steps:
+1. Determine the current session file path: find the corresponding project directory under `~/.claude/projects/`, and use the most recently modified `.jsonl` file. Path encoding rule: replace `/` in the working directory path with `-`.
+2. Run the script to locate the last conversation turn (prefer python3, fallback to node):
    ```
    python3 $PLUGIN_DIR/scripts/session2doc.py locate-last <session_file>
    ```
-   如果 python3 不可用：
+   If python3 is unavailable:
    ```
    node $PLUGIN_DIR/scripts/session2doc.mjs locate-last <session_file>
    ```
-3. 用返回的 uuid 添加标记：
+3. Add the mark using the returned uuids:
    ```
    python3 $PLUGIN_DIR/scripts/session2doc.py add-mark .session2doc/state.json "$ARGUMENTS.desc" <user_uuid> <assistant_uuid>
    ```
-4. 向用户确认：已将上一轮对话标记到 "$ARGUMENTS.desc"（共 N 条）。
+4. Confirm to user: marked the last conversation turn to "$ARGUMENTS.desc" (N total).

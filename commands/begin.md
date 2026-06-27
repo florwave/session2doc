@@ -1,21 +1,21 @@
 ---
-description: 开始录制对话历史
+description: Start recording conversation history
 ---
 
-开始录制模式，从当前位置开始记录后续所有对话。
+Start recording mode, recording all subsequent conversations from the current position.
 
-步骤：
-1. 确定当前 session 文件路径（同 mark 命令）。
-2. 定位当前最后一条消息：
+Steps:
+1. Determine the current session file path (same as mark command).
+2. Locate the last message:
    ```
    python3 $PLUGIN_DIR/scripts/session2doc.py locate-last <session_file>
    ```
-   如果 python3 不可用：
+   If python3 is unavailable:
    ```
    node $PLUGIN_DIR/scripts/session2doc.mjs locate-last <session_file>
    ```
-3. 开始录制：
+3. Start recording:
    ```
    python3 $PLUGIN_DIR/scripts/session2doc.py begin .session2doc/state.json <assistant_uuid>
    ```
-4. 向用户确认：录制已开始，后续对话将被记录。使用 `/session2doc:end <desc> <path>` 结束录制并生成文档。
+4. Confirm to user: recording has started. Use `/session2doc:end <desc> <path>` to stop recording and generate a document.
