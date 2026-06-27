@@ -1,0 +1,13 @@
+{
+  "name": "session2doc",
+  "description": "Mark conversation history and compile into documents",
+  "version": "0.1.0",
+  "author": {
+    "name": "Lorain",
+    "url": "https://github.com/florwave"
+  },
+  "homepage": "https://github.com/florwave/session2doc",
+  "repository": "https://github.com/florwave/session2doc",
+  "license": "Apache-2.0",
+  "keywords": ["session", "document", "conversation", "export", "notes", "knowledge"]
+}

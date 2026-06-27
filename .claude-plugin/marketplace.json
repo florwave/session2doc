@@ -1,0 +1,20 @@
+{
+  "name": "session2doc",
+  "owner": {
+    "name": "Lorain",
+    "email": "florwave@users.noreply.github.com"
+  },
+  "metadata": {
+    "description": "Mark conversation history during sessions and compile into formatted documents",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "session2doc",
+      "source": "./",
+      "description": "Mark and compile AI conversation history into well-organized documents. Supports mark mode (scattered conversations) and begin/end mode (continuous conversations).",
+      "category": "productivity",
+      "tags": ["session", "document", "conversation", "export", "notes", "knowledge", "history"]
+    }
+  ]
+}
