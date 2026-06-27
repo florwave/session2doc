@@ -12,8 +12,8 @@ When learning a topic through AI conversations, useful information is scattered 
 # Install from GitHub
 claude plugins add https://github.com/florwave/session2doc
 
-# Or install from a local path
-claude plugins add /path/to/session2doc
+# Or install from marketplace
+claude plugins add session2doc
 ```
 
 ## Commands
