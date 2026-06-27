@@ -3,7 +3,11 @@ description: 将标记的对话整理为文档
 argument-hint: "<desc> <path>"
 ---
 
-将 "$ARGUMENTS.desc" 分组下所有标记的对话整理为文档，输出到 "$ARGUMENTS.path"。
+将指定主题分组下所有标记的对话整理为文档。
+
+参数：
+- `desc`（必填）：要整理的主题描述，对应之前 mark 时使用的分组标识。
+- `path`（必填）：输出文件路径，文档将写入该位置。
 
 步骤：
 1. 确定当前 session 文件路径（同 mark 命令）。

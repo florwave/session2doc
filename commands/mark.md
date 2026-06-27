@@ -3,7 +3,10 @@ description: 标记上一轮对话到指定主题分组
 argument-hint: "<desc>"
 ---
 
-将当前 session 最近一轮对话标记到 "$ARGUMENTS.desc" 分组。
+将当前 session 最近一轮对话标记到指定主题分组。
+
+参数：
+- `desc`（必填）：主题描述，用于分组标识。可同时维护多个主题，通过 `/session2doc:doc` 分别生成文档。
 
 步骤：
 1. 确定当前 session 文件路径：从 `~/.claude/projects/` 下找到与当前项目对应的目录，取最近修改的 `.jsonl` 文件。项目路径编码规则：将工作目录的 `/` 替换为 `-`。
