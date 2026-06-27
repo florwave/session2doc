@@ -8,12 +8,18 @@ When learning a topic through AI conversations, useful information is scattered 
 
 ## Installation
 
+**From GitHub:**
 ```bash
-# Install from GitHub
 claude plugins add https://github.com/florwave/session2doc
+```
 
-# Or install from marketplace
-claude plugins add session2doc
+**From Marketplace:**
+```bash
+# Step 1: Add the marketplace
+/plugins marketplace add florwave/session2doc
+
+# Step 2: Install the plugin
+/plugins install session2doc
 ```
 
 ## Commands
