@@ -1,5 +1,4 @@
 ---
-name: begin
 description: 开始录制对话历史
 ---
 

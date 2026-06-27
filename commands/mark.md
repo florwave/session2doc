@@ -1,10 +1,6 @@
 ---
-name: mark
 description: 标记上一轮对话到指定主题分组
-arguments:
-  - name: desc
-    description: 主题描述，用于分组标识
-    required: true
+argument-hint: "<desc>"
 ---
 
 将当前 session 最近一轮对话标记到 "$ARGUMENTS.desc" 分组。

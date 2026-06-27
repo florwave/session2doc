@@ -1,13 +1,6 @@
 ---
-name: doc
 description: 将标记的对话整理为文档
-arguments:
-  - name: desc
-    description: 要整理的主题描述
-    required: true
-  - name: path
-    description: 输出文件路径
-    required: true
+argument-hint: "<desc> <path>"
 ---
 
 将 "$ARGUMENTS.desc" 分组下所有标记的对话整理为文档，输出到 "$ARGUMENTS.path"。

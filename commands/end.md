@@ -1,13 +1,6 @@
 ---
-name: end
 description: 结束录制并生成文档
-arguments:
-  - name: desc
-    description: 文档主题描述
-    required: true
-  - name: path
-    description: 输出文件路径
-    required: true
+argument-hint: "<desc> <path>"
 ---
 
 结束录制模式，将从 begin 到现在的所有对话整理为文档。
