@@ -106,12 +106,33 @@ function extractRange(stateFile, sessionFile) {
   console.log(JSON.stringify(results));
 }
 
+function markLast(stateFile, desc, sessionFile) {
+  const messages = readJsonl(sessionFile).filter(o => o.type === 'user' || o.type === 'assistant');
+  let lastAssistant = null, lastUser = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].type === 'assistant' && !lastAssistant) lastAssistant = messages[i];
+    else if (messages[i].type === 'user' && lastAssistant) { lastUser = messages[i]; break; }
+  }
+  if (!lastUser || !lastAssistant) {
+    console.log(JSON.stringify({ error: 'no conversation pair found' }));
+    process.exit(1);
+  }
+  const state = loadState(stateFile);
+  if (!state.marks[desc]) state.marks[desc] = [];
+  const entry = { user_uuid: lastUser.uuid, assistant_uuid: lastAssistant.uuid };
+  const exists = state.marks[desc].some(m => m.user_uuid === entry.user_uuid && m.assistant_uuid === entry.assistant_uuid);
+  if (!exists) state.marks[desc].push(entry);
+  saveState(stateFile, state);
+  console.log(JSON.stringify({ status: 'ok', desc, count: state.marks[desc].length }));
+}
+
 const [,, cmd, ...args] = process.argv;
 const usage = (msg) => { process.stderr.write(msg + '\n'); process.exit(1); };
 
 if (cmd === 'locate-last') { if (!args[0]) usage('Usage: session2doc.mjs locate-last <session_file>'); locateLast(args[0]); }
 else if (cmd === 'add-mark') { if (args.length < 4) usage('Usage: session2doc.mjs add-mark <state_file> <desc> <user_uuid> <assistant_uuid>'); addMark(...args.slice(0, 4)); }
 else if (cmd === 'begin') { if (args.length < 2) usage('Usage: session2doc.mjs begin <state_file> <last_uuid>'); beginRecording(args[0], args[1]); }
+else if (cmd === 'mark-last') { if (args.length < 3) usage('Usage: session2doc.mjs mark-last <state_file> <desc> <session_file>'); markLast(args[0], args[1], args[2]); }
 else if (cmd === 'extract') { if (args.length < 3) usage('Usage: session2doc.mjs extract <state_file> <session_file> <desc>'); extractMarks(args[0], args[1], args[2]); }
 else if (cmd === 'extract-range') { if (args.length < 2) usage('Usage: session2doc.mjs extract-range <state_file> <session_file>'); extractRange(args[0], args[1]); }
 else usage(cmd ? `Unknown command: ${cmd}` : 'Usage: session2doc.mjs <command> [args...]');

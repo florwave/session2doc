@@ -198,6 +198,52 @@ def extract_range(state_file, session_file):
     print(json.dumps(results, ensure_ascii=False))
 
 
+def mark_last(state_file, desc, session_file):
+    """Locate the last conversation pair and mark it in one atomic operation."""
+    messages = []
+    with open(session_file) as f:
+        for line in f:
+            try:
+                obj = json.loads(line.strip())
+            except json.JSONDecodeError:
+                continue
+            if obj.get("type") in ("user", "assistant"):
+                messages.append(obj)
+
+    last_assistant = None
+    last_user = None
+    for i in range(len(messages) - 1, -1, -1):
+        if messages[i]["type"] == "assistant" and last_assistant is None:
+            last_assistant = messages[i]
+        elif messages[i]["type"] == "user" and last_assistant is not None:
+            last_user = messages[i]
+            break
+
+    if not last_user or not last_assistant:
+        print(json.dumps({"error": "no conversation pair found"}))
+        sys.exit(1)
+
+    state = {"marks": {}, "recording": {"active": False, "start_uuid": None}}
+    if os.path.exists(state_file):
+        with open(state_file) as f:
+            state = json.load(f)
+
+    if desc not in state["marks"]:
+        state["marks"][desc] = []
+
+    entry = {"user_uuid": last_user["uuid"], "assistant_uuid": last_assistant["uuid"]}
+    if entry not in state["marks"][desc]:
+        state["marks"][desc].append(entry)
+
+    dirname = os.path.dirname(state_file)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+    with open(state_file, "w") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
+
+    print(json.dumps({"status": "ok", "desc": desc, "count": len(state["marks"][desc])}))
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: session2doc.py <command> [args...]", file=sys.stderr)
@@ -219,6 +265,11 @@ def main():
             print("Usage: session2doc.py begin <state_file> <last_uuid>", file=sys.stderr)
             sys.exit(1)
         begin_recording(sys.argv[2], sys.argv[3])
+    elif cmd == "mark-last":
+        if len(sys.argv) < 5:
+            print("Usage: session2doc.py mark-last <state_file> <desc> <session_file>", file=sys.stderr)
+            sys.exit(1)
+        mark_last(sys.argv[2], sys.argv[3], sys.argv[4])
     elif cmd == "extract":
         if len(sys.argv) < 5:
             print("Usage: session2doc.py extract <state_file> <session_file> <desc>", file=sys.stderr)
