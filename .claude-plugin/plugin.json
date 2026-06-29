@@ -1,7 +1,7 @@
 {
   "name": "session2doc",
   "description": "Mark conversation history and compile into documents",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Lorain",
     "url": "https://github.com/justlorain"
